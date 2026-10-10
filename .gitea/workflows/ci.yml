@@ -1,0 +1,45 @@
+# Prüfen bei jedem Push: Sauberkeit, dann die Tests gegen den Hub.
+# Repo-Variablen: FYOS_RUNNER (Runner-Label) und eine der beiden Hub-Quellen:
+#   FYOS_HUB_QUELLE  Paketangabe des Hubs für uv, zum Beispiel "git+https://git.example.com/fyos/fyos-os.git#subdirectory=hub"
+#   FYOS_PIP_INDEX   Paketindex, der fyos-hub enthält (die Paket-Registry des Git-Servers), z. B.
+#                    "https://registry.example.com/api/packages/org/pypi/simple"; gilt, wenn FYOS_HUB_QUELLE leer ist
+# Keine Geheimnisse nötig (öffentlicher oder lesbarer Index).
+# Installiert wird mit uv statt pip: Der Index steht per --index vor PyPI, und --index-strategy first-index nimmt ein
+# Paket nur aus dem ersten Index, der es führt. So verdrängt kein gleichnamiges Paket auf PyPI das eigene
+# (Dependency Confusion). Mit pip --extra-index-url wäre das möglich. Die Version von uv ist fest.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ gitea.workflow }}-${{ gitea.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    runs-on: ${{ vars.FYOS_RUNNER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sauberkeit
+        run: python3 tools/sauber.py .
+      - name: Tests
+        env:
+          FYOS_HUB_QUELLE: ${{ vars.FYOS_HUB_QUELLE }}
+          FYOS_PIP_INDEX: ${{ vars.FYOS_PIP_INDEX }}
+        run: |
+          python3 -m venv /tmp/venv
+          /tmp/venv/bin/pip install -q uv==0.12.8
+          if [ -n "$FYOS_HUB_QUELLE" ]; then
+            /tmp/venv/bin/uv pip install -q --python /tmp/venv/bin/python "$FYOS_HUB_QUELLE"
+          else
+            /tmp/venv/bin/uv pip install -q --python /tmp/venv/bin/python --prerelease allow \
+              --index-strategy first-index --index "$FYOS_PIP_INDEX" fyos-hub
+          fi
+          /tmp/venv/bin/uv pip install -q --python /tmp/venv/bin/python -e ".[test]"
+          /tmp/venv/bin/python -m pytest -q
+
+  # Optional: das Hub-Bild mit diesem Plugin bauen und in die eigene Registry schieben. Muster dafür steht in
+  # fyos-agent/.gitea/workflows/ci.yml (Anmelden, docker/build-push-action mit `context: .` und dem Dockerfile
+  # dieses Repos).

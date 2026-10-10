@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-labelledby="t d">
+<title id="t">Skizze: Vorlage-Plugin</title>
+<desc id="d">Ein kleines Fenster mit einem Gruß, einer gespeicherten Notiz und einem Eingabefeld mit zwei Knöpfen; daneben der Hinweis, dass ein Plugin Werkzeuge und Oberfläche liefert.</desc>
+<style>
+.bg{fill:#f4f1ea}.fl{fill:#fffdf8}.bar{fill:#e6e0d3}.ink{fill:#2b2a27}.mut{fill:#8b8578}.acc{fill:#3f7d6e}.wrm{fill:#c9824a}
+.ln{fill:none;stroke:#2b2a27;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.dsh{stroke-dasharray:6 5;opacity:.45}
+text{font-family:ui-rounded,system-ui,-apple-system,sans-serif;font-size:14px}
+@media (prefers-color-scheme:dark){.bg{fill:#1d1c1a}.fl{fill:#2a2926}.bar{fill:#3a3833}.ink{fill:#ece7dc}.mut{fill:#8f897c}.acc{fill:#5fb3a0}.wrm{fill:#e0a06b}.ln{stroke:#ece7dc}}
+</style>
+<rect class="bg" width="640" height="400" rx="14"/>
+<rect class="ln dsh" x="6" y="6" width="628" height="388" rx="10"/>
+<rect class="fl" x="60" y="60" width="330" height="250" rx="10"/>
+<rect class="ln" x="60" y="60" width="330" height="250" rx="10"/>
+<rect class="bar" x="61" y="61" width="328" height="28" rx="9"/>
+<text class="ink" x="196" y="80">Vorlage</text>
+<rect class="bar" x="82" y="108" width="286" height="74" rx="8"/>
+<text class="ink" x="96" y="136" font-weight="700">Hallo, Alex!</text>
+<text class="mut" x="96" y="160">Notiz: Milch nicht vergessen</text>
+<rect class="bar" x="82" y="204" width="170" height="32" rx="8"/>
+<text class="mut" x="96" y="225">Neue Notiz</text>
+<rect class="bar" x="260" y="204" width="46" height="32" rx="8"/>
+<text class="ink" x="269" y="225">Prüf</text>
+<rect class="acc" x="312" y="204" width="56" height="32" rx="8"/>
+<text class="fl" x="322" y="225" font-weight="700">Sich.</text>
+<path class="ln" d="M390 185h60"/><path class="ln" d="M442 178l8 7-8 7"/>
+<rect class="wrm" x="460" y="120" width="140" height="130" rx="10"/>
+<text class="fl" x="494" y="160" font-weight="700">Plugin</text>
+<text class="fl" x="478" y="184">vorlage.hallo</text>
+<text class="fl" x="478" y="204">vorlage.notiz_setzen</text>
+<text class="fl" x="478" y="228">und die App</text>
+<text class="mut" x="60" y="352">Muster für eigene Plugins</text>
+<text class="mut" x="566" y="388" font-size="12">Skizze</text>
+</svg>

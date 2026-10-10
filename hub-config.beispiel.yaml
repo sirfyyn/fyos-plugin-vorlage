@@ -1,0 +1,13 @@
+# Beispiel für den Eintrag dieses Plugins in der Hub-Konfiguration (MCP_HUB_CONFIG_PATH, Vorgabe ./config.yaml).
+# Ein Eintrag ist nur nötig für Konfiguration, Geheimnisse oder `enabled: false`; das installierte Paket lädt
+# sonst von selbst über den Entry-Point.
+plugins:
+  - name: vorlage
+    config:
+      begruessung: Moin        # Vorgabe: Hallo
+      notiz_max: 200           # Vorgabe: 280
+    # Geheimnisse stehen nie hier, nur ihr Name. Der Hub löst sie aus der Umgebung oder aus /run/secrets/<name> auf
+    # und legt sie als Umgebungsvariable FYOS_VORLAGE_TOKEN an, wo das Plugin sie liest.
+    secrets:
+      - { name: vorlage-token, env: FYOS_VORLAGE_TOKEN }
+    # enabled: false           # schaltet das Plugin ab, auch wenn es installiert ist

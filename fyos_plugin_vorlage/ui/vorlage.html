@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vorlage</title>
+<style>/*STIL*/
+  .gruss { padding: 14px 16px; margin: 0 0 14px; }
+  .gruss-satz { font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+  .gruss-notiz { margin-top: 8px; overflow-wrap: anywhere; }
+  .gruss-zeit { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12px; color: var(--mut); }
+  .notiz-neu { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 14px; }
+  .notiz-neu input { flex: 1 1 200px; min-width: 0; }
+</style>
+</head>
+<body>
+<!--KOPF-->
+  <button id="neu" class="rund drehen" title="Aktualisieren" aria-label="Aktualisieren"><svg class="ico" data-symbol="refresh-cw"></svg></button>
+<!--/KOPF-->
+<main>
+  <div id="gruss"><div class="laedt">Lädt …</div></div>
+  <form class="notiz-neu" id="formular" autocomplete="off">
+    <input id="text" type="text" placeholder="Neue Notiz" aria-label="Neue Notiz" enterkeyhint="send">
+    <button type="button" id="pruefen" class="leise">Nur prüfen</button>
+    <button type="submit" class="haupt"><svg class="ico" data-symbol="plus"></svg>Speichern</button>
+  </form>
+  <!-- Platz für die Rückfrage vor dem Speichern (App.beantragen) -->
+  <div id="antrag"></div>
+</main>
+<script>
+/*BRUECKE*/
+const $ = (id) => document.getElementById(id);
+const { esc, symbol, zustand, satz } = App;
+// Werkzeugnamen der App: <plugin>__<werkzeug>
+const rufen = (name, args) => App.rufen("vorlage__" + name, args);
+
+// Frische: Das Panel zeigt, wie alt seine Daten sind. Ab dieser Schwelle (Minuten ohne neue Daten) steht „veraltet“ dabei.
+const SCHWELLE_MIN = 5;
+
+let stand = null;
+let bekommen = false;
+
+function zeichnen() {
+  if (!stand) return;
+  $("text").maxLength = stand.notiz_max || 280;
+  satz(stand.satz, "gut");
+  const notiz = stand.notiz
+    ? `<div class="gruss-notiz">${esc(stand.notiz)}</div>`
+    : zustand({ symbol: "puzzle", titel: "Noch keine Notiz", text: "Schreib unten eine auf.", klein: true });
+  const gesetzt = stand.notiz ? `<span>Gesetzt ${App.zeit.stempel(stand.gesetzt_am * 1000)}</span>` : "";
+  // Stand der Daten = Zeitpunkt, den das Werkzeug meldet (`zeit`), nicht der Moment des Abrufs im Browser.
+  const frische = App.frische(stand.zeit * 1000, { schwelleMin: SCHWELLE_MIN });
+  $("gruss").innerHTML = `<div class="karte gruss"><div class="gruss-satz">${esc(stand.satz)}</div>${notiz}<div class="gruss-zeit">${gesetzt}${frische}</div></div>`;
+}
+
+function uebernehmen(d) {
+  if (d && typeof d.satz === "string" && "notiz" in d) { stand = d; zeichnen(); }
+}
+
+async function laden() {
+  try { uebernehmen(await rufen("hallo")); bekommen = true; }
+  catch (e) {
+    // Scheitert das Neuladen, bleiben die alten Daten mit ihrem alten Stempel stehen; der Satz im Kopf sagt, was los ist.
+    if (stand) { satz("Aktualisieren hat nicht geklappt: " + App.fehlertext(e), "schlecht"); return; }
+    $("gruss").innerHTML = '<div class="karte">' + zustand({ symbol: "circle-alert", ton: "schlecht", titel: "Fehler", text: App.fehlertext(e), klein: true }) + "</div>";
+  }
+}
+
+// Anfrage statt Aktion: „Speichern“ schreibt nichts, es fragt. Die Brücke holt den Plan per Trockenlauf, zeigt ihn in `#antrag`
+// mit „Ja, speichern“ und „Abbrechen“ und ruft das Werkzeug erst nach dem Ja wirklich (die Bestätigung für das Werkzeug setzt
+// die Brücke, nie diese Datei). Ergebnis: das des echten Laufs, oder null, wenn abgebrochen wurde.
+async function speichern() {
+  const text = $("text").value.trim();
+  if (!text) return;
+  try {
+    const r = await App.beantragen({ werkzeug: "vorlage__notiz_setzen", args: { text }, ort: $("antrag"), ja: "Ja, speichern" });
+    if (r) { $("text").value = ""; await laden(); }
+  } catch (e) { satz(App.fehlertext(e), "schlecht"); }
+}
+
+// „Nur prüfen“: der Trockenlauf allein ändert nichts und darf darum direkt gerufen werden.
+async function pruefen() {
+  const text = $("text").value.trim();
+  if (!text) return;
+  try {
+    const r = await rufen("notiz_setzen", { text, __dry_run__: true });
+    satz("Plan: " + (r && r.would_execute ? r.would_execute : "ok"), "");
+  } catch (e) { satz(App.fehlertext(e), "schlecht"); }
+}
+
+$("formular").addEventListener("submit", (ev) => { ev.preventDefault(); speichern(); });
+$("pruefen").addEventListener("click", pruefen);
+$("neu").addEventListener("click", laden);
+
+// Öffnet der Host die App mit einem Werkzeugergebnis (Shell, Chat), kommt es hier an.
+App.auf("ui/notifications/tool-result", (r) => { const d = App.daten(r); if (d && "notiz" in d) { bekommen = true; uebernehmen(d); } });
+// Kam nach dem Start nichts von außen, die Daten selbst holen; danach jede Minute neu, solange die App zu sehen ist.
+App.start("fyos-vorlage").then(() => {
+  setTimeout(() => { if (!bekommen) laden(); }, 1500);
+  App.takt(60000, laden);
+}).catch(() => {});
+</script>
+</body>
+</html>

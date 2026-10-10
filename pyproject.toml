@@ -1,0 +1,39 @@
+[build-system]
+# 77: erste Fassung mit Lizenz als SPDX-Ausdruck (PEP 639); die Tabellenform `license = { text = ... }` ist veraltet.
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fyos-plugin-vorlage"
+version = "0.1.0"
+description = "Muster für ein FYOS-Hub-Plugin: Werkzeuge vorlage.*, eine kleine App (ui://), ein Skill und ein Katalogeintrag"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "sirfyyn and FYOS CONTRIBUTORS" }]  # sauber: ok
+dependencies = ["fyos-hub"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pyyaml>=6"]
+
+# Der Hub lädt das Plugin von selbst, sobald das Paket installiert ist (Gruppe `mcp_hub.plugins`).
+[project.entry-points."mcp_hub.plugins"]
+vorlage = "fyos_plugin_vorlage.plugin:VorlagePlugin"
+
+# Der Installer findet den Katalogeintrag (Gruppe `fyos.katalog`); die Funktion liefert den Pfad der Datei.
+[project.entry-points."fyos.katalog"]
+vorlage = "fyos_plugin_vorlage:katalog_pfad"
+
+# Das Hub-Plugin `skills` liest die Skills aus dem Unterordner `skills/` dieses Pakets (Gruppe `fyos.skills`).
+[project.entry-points."fyos.skills"]
+vorlage = "fyos_plugin_vorlage"
+
+[tool.setuptools]
+packages = ["fyos_plugin_vorlage"]
+
+[tool.setuptools.package-data]
+fyos_plugin_vorlage = ["ui/*", "bilder/*", "fyos-katalog.yaml", "skills/*/*.md", "skills/*/references/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,44 @@
+# Katalogeintrag dieses Plugins für den FYOS-Installer (Schema: fyos-os/installer/fyos_installer/katalog.py).
+# Der Installer findet die Datei über den Entry-Point `fyos.katalog` (pyproject.toml). Die Bilder liegen
+# daneben unter bilder/ (Dateiname <id>-<n>.svg|png|jpg|webp, hier nur der Name in `bilder`).
+version: 1
+bausteine:
+  - id: vorlage
+    titel: Vorlage-Plugin
+    kurz: Eine Begrüßung und eine Notiz als kleine App; Muster für eigene Plugins.
+    was_daraus_wird: |
+      Im Desktop erscheint ein zusätzliches Fenster, das dich begrüßt und eine Notiz zeigt, die du dort speichern kannst.
+      Der Gruß ist einstellbar; die Notiz bleibt auf deiner Installation.
+      Der Agent kann dieselben Werkzeuge aufrufen: Er begrüßt dich und merkt sich auf Wunsch eine Notiz.
+      Speichern fragt zuerst nach: Du siehst, was geschehen würde, und bestätigst erst dann; »Nur prüfen« zeigt es, ohne etwas zu ändern.
+      Gedacht ist der Baustein als Ausgangspunkt für eigene Plugins, nicht für den Alltag.
+    bilder: [vorlage-1.svg]
+    art: plugin
+    pflicht: false
+    abhaengig_von: [kern]
+    voraussetzungen: []
+    # Auf welche Stufe der Baustein welche Schicht hebt (Reifegrad im Installer, 1 bis 3): eine App und Werkzeuge für den Agenten.
+    # Ältere Installer kennen das Feld nicht und ignorieren es.
+    reife: { oberflaeche: 2, agent: 2 }
+    # Woher der Installer das Paket holt: aus dem Paketindex (FYOS_PAKETINDEX) unter `paket`
+    # oder per Git aus <FYOS_PLUGIN_QUELLE>/<repo>.git.
+    quelle: { paket: fyos-plugin-vorlage, repo: fyos-plugin-vorlage }
+    # Ohne Angabe lädt der Hub das Plugin über den Entry-Point; ein Eintrag hier schreibt ihn ausdrücklich in die Hub-Konfiguration.
+    hub_plugins:
+      - { name: vorlage }
+    # Jedes Feld wird zu einer Umgebungsvariable des Hubs; das Plugin liest sie (plugin.py, `_wert`).
+    konfiguration:
+      - name: begruessung
+        titel: Begrüßung
+        typ: text
+        beschreibung: Gruß der Begrüßung (leer lassen für »Hallo«)
+        standard: ""
+        pflicht: false
+        umgebung: FYOS_VORLAGE_BEGRUESSUNG
+      - name: token
+        titel: Beispiel-Token
+        typ: geheim
+        beschreibung: Beispiel für ein Geheimnis; die Vorlage braucht keines, zeigt aber den Weg
+        standard: ""
+        pflicht: false
+        umgebung: FYOS_VORLAGE_TOKEN
